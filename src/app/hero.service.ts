@@ -49,4 +49,47 @@ export class HeroService {
       return of(result as T);
     }
   }
+
+  updateHero(hero : Hero) : Observable<any> {
+    const httpOptions = {
+      headers : new HttpHeaders({'Content-Type' : 'appication-json'})
+    };
+    return this.http.put(this.heroesUrl, hero, httpOptions).pipe(
+      tap(_ => this.log(`updated hero id=${hero.id}`)),
+      catchError(this.handleError<any>('updateHero'))
+    );
+  }
+
+  addHero(hero : Hero) : Observable<Hero>{
+    const httpOptions = {
+      headers : new HttpHeaders({'Content-Type' : 'appication-json'})
+    };
+    return this.http.post<Hero>(this.heroesUrl, hero, httpOptions).pipe(
+      tap((hero : Hero) => this.log(`added hero w/ id=${hero.id}`)),
+      catchError(this.handleError<Hero>('addHero'))
+    )
+  }
+
+  deleteHero(hero : Hero | number) : Observable<Hero>{
+    const id = typeof hero === 'number' ? hero : hero.id;
+    const url = `${this.heroesUrl}/${id}`;
+    const httpOptions = {
+      headers : new HttpHeaders({'Content-Type' : 'appication-json'})
+    };
+
+    return this.http.delete<Hero>(url, httpOptions).pipe(
+      tap(_ => this.log(`deleted hero id=${id}`)),
+      catchError(this.handleError<Hero>('deletedHero'))
+    );
+  } 
+
+  searchHeroes(term : string) : Observable<Hero[]>{
+    if(!term.trim()){
+      return of([]);
+    }
+    return this.http.get<Hero[]>(`api/heroes/?name=${term}`).pipe(
+      tap(_ => this.log(`found heroes matching ${term}`)),
+      catchError(this.handleError<Hero[]>('searchHeroes', []))
+    )
+  }
 }
